@@ -108,7 +108,7 @@ def _google_translator(txt: str, source: LangType, target: LangType, model_id: s
 def translate_text(txt: str, source: LangType, target: LangType,
                    translate_type: TranslateType = current_type) -> Optional[str]:
     if translate_type == TranslateType.LLM:
-        return _llm_translator(txt, source, target, model='claude-3-5-sonnet-20240620', temperature=0.5)
+        return _llm_translator(txt, source, target, model='claude-3-5-sonnet-20241022', temperature=0.5)
     elif translate_type == TranslateType.GOOGLE:
         google_result = _google_translator(txt, source, target, model_id='general/translation-llm')
         if google_result:
