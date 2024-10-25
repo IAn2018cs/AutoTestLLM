@@ -1,0 +1,5 @@
+/auth/
+.env
+/temp_files/
+/test_case/
+.idea
