@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+from email.policy import default
 
 from dotenv import load_dotenv
 
@@ -21,3 +22,6 @@ feishu_app_secret: str = os.getenv('FEISHU_APP_SECRET')
 port: int = int(os.getenv('PORT'))
 
 ft_models: list[str] = os.getenv('FT_MODELS').split(' ')
+
+dialogue_sleep = float(os.getenv('DIALOGUE_SLEEP', default='1'))
+max_workers = int(os.getenv('MAX_WORKERS', default='1'))

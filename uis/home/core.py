@@ -1,13 +1,12 @@
 # coding=utf-8
 import time
+from concurrent.futures import ThreadPoolExecutor
 
-from tqdm import tqdm
-
+import config
 from feishu.excel_tools import create_worksheet
 from feishu.feishu_sdk import FeiShuSdk
 from roleplay_bot import RoleplayBot
 from tools import generate_random_id
-from user_dialogue_factory import fetch_dialogue, DialogueType
 
 
 class RoleInfo:
@@ -16,24 +15,6 @@ class RoleInfo:
         self.name = name
         self.brief_intro = brief_intro
         self.first = first
-
-
-def test_conv(test_id: int, model: str, role: RoleInfo, conv_length: int,
-              nsfw: bool, open_translate: bool, dialogue_type: DialogueType):
-    bot = RoleplayBot(
-        test_id=test_id,
-        model=model,
-        name=role.name,
-        brief_intro=role.brief_intro,
-        first=role.first,
-        nsfw=nsfw
-    )
-    for index in tqdm(range(conv_length), desc=f"Conversation test {test_id}"):
-        bot.ask(
-            msg=fetch_dialogue(index, bot.get_last_message(), dialogue_type=dialogue_type)
-        )
-        time.sleep(3)
-    return bot.get_conversation(open_translate)
 
 
 def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: list[str], conv_length: int,
@@ -52,7 +33,7 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
         bot.ask(
             msg=dialogues[index % len(dialogues)]
         )
-        time.sleep(3)
+        time.sleep(config.dialogue_sleep)
         pbar.update(1)
     return bot.get_conversation(open_translate)
 
@@ -62,21 +43,31 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
     messages_map = {}
     total = len(roles) * rounds * conv_length
     with progress.tqdm(total=total) as pbar:
-        for role in roles:
-            all_messages = []
-            for test_id in range(1, rounds + 1):
-                messages = test_conv_by_dialogue(
-                    test_id=test_id,
-                    model=model,
-                    role=role,
-                    dialogues=dialogues,
-                    conv_length=conv_length,
-                    nsfw=True,
-                    open_translate=open_translate,
-                    pbar=pbar
-                )
-                all_messages.extend(messages)
-            messages_map[role.name] = all_messages
+        with ThreadPoolExecutor(max_workers=config.max_workers) as executor:
+            for role in roles:
+                futures = []
+                # 提交所有任务到线程池
+                for test_id in range(1, rounds + 1):
+                    future = executor.submit(
+                        test_conv_by_dialogue,
+                        test_id=test_id,
+                        model=model,
+                        role=role,
+                        dialogues=dialogues,
+                        conv_length=conv_length,
+                        nsfw=True,
+                        open_translate=open_translate,
+                        pbar=pbar
+                    )
+                    futures.append((test_id, future))
+
+                # 按 test_id 收集结果
+                all_messages = []
+                for test_id, future in sorted(futures, key=lambda x: x[0]):
+                    messages = future.result()
+                    all_messages.extend(messages)
+
+                messages_map[role.name] = all_messages
     return messages_map
 
 
