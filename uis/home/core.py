@@ -37,7 +37,8 @@ def test_conv(test_id: int, model: str, role: RoleInfo, conv_length: int,
 
 
 def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: list[str], conv_length: int,
-                          nsfw: bool, open_translate: bool):
+                          nsfw: bool, open_translate: bool,
+                          pbar):
     bot = RoleplayBot(
         test_id=test_id,
         model=model,
@@ -46,31 +47,36 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
         first=role.first,
         nsfw=nsfw
     )
-    for index in tqdm(range(conv_length), desc=f"Conversation test {test_id}"):
+    pbar.set_description(f"Conversation test {test_id}")
+    for index in range(conv_length):
         bot.ask(
             msg=dialogues[index % len(dialogues)]
         )
         time.sleep(3)
+        pbar.update(1)
     return bot.get_conversation(open_translate)
 
 
 def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: int, conv_length: int,
                open_translate: bool, progress):
     messages_map = {}
-    for role in progress.tqdm(roles):
-        all_messages = []
-        for test_id in range(1, rounds + 1):
-            messages = test_conv_by_dialogue(
-                test_id=test_id,
-                model=model,
-                role=role,
-                dialogues=dialogues,
-                conv_length=conv_length,
-                nsfw=True,
-                open_translate=open_translate
-            )
-            all_messages.extend(messages)
-        messages_map[role.name] = all_messages
+    total = len(roles) * rounds * conv_length
+    with progress.tqdm(total=total) as pbar:
+        for role in roles:
+            all_messages = []
+            for test_id in range(1, rounds + 1):
+                messages = test_conv_by_dialogue(
+                    test_id=test_id,
+                    model=model,
+                    role=role,
+                    dialogues=dialogues,
+                    conv_length=conv_length,
+                    nsfw=True,
+                    open_translate=open_translate,
+                    pbar=pbar
+                )
+                all_messages.extend(messages)
+            messages_map[role.name] = all_messages
     return messages_map
 
 
