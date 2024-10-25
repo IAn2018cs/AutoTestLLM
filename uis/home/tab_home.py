@@ -72,8 +72,7 @@ def build_home_ui():
                 dialogue_file = gr.File(label="对话列表", file_types=['.csv'])
 
         start_gen_btn = gr.Button("开始测试", variant="primary")
-        with gr.Row():
-            markdown_url = gr.Markdown(value="## 测试结果飞书文档链接：")
+        markdown_url = gr.Markdown(value="## 测试结果飞书文档链接：", min_height=100)
 
     start_gen_btn.click(
         fn=start_gan,
