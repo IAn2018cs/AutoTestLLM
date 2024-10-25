@@ -24,4 +24,5 @@ port: int = int(os.getenv('PORT'))
 ft_models: list[str] = os.getenv('FT_MODELS').split(' ')
 
 dialogue_sleep = float(os.getenv('DIALOGUE_SLEEP', default='1'))
+translate_sleep = float(os.getenv('TRANSLATE_SLEEP', default='1'))
 max_workers = int(os.getenv('MAX_WORKERS', default='1'))

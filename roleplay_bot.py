@@ -3,6 +3,7 @@ import time
 
 from tqdm import tqdm
 
+import config
 from llm.conv_bot import ConvBot
 from translate_factory import translate_text, LangType
 
@@ -83,5 +84,5 @@ class RoleplayBot:
             )
             order_id += 1
             if open_translate:
-                time.sleep(1)
+                time.sleep(config.translate_sleep)
         return result
