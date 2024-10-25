@@ -58,11 +58,25 @@ def save_txt_to_file(file_path: str, content: str):
         file.write(content)
 
 
+def load_data_with_upload(csv_path, usecols):
+    try:
+        df = pd.read_csv(csv_path, usecols=usecols)
+        authors = df.to_dict(orient='records')
+        return authors
+    except Exception as e:
+        print(e)
+        return []
+
+
 def load_data(csv_path, usecols):
-    csv_path = root_relative_path(csv_path)
-    df = pd.read_csv(csv_path, usecols=usecols)
-    authors = df.to_dict(orient='records')
-    return authors
+    try:
+        csv_path = root_relative_path(csv_path)
+        df = pd.read_csv(csv_path, usecols=usecols)
+        authors = df.to_dict(orient='records')
+        return authors
+    except Exception as e:
+        print(e)
+        return []
 
 
 def generate_random_id(length=10):

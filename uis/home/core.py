@@ -36,35 +36,54 @@ def test_conv(test_id: int, model: str, role: RoleInfo, conv_length: int,
     return bot.get_conversation(open_translate)
 
 
-def start_test(model: str, roles: list[RoleInfo], rounds: int, conv_length: int,
-               open_translate: bool, dialogue_type: DialogueType, progress):
+def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: list[str], conv_length: int,
+                          nsfw: bool, open_translate: bool):
+    bot = RoleplayBot(
+        test_id=test_id,
+        model=model,
+        name=role.name,
+        brief_intro=role.brief_intro,
+        first=role.first,
+        nsfw=nsfw
+    )
+    for index in tqdm(range(conv_length), desc=f"Conversation test {test_id}"):
+        bot.ask(
+            msg=dialogues[index % len(dialogues)]
+        )
+        time.sleep(3)
+    return bot.get_conversation(open_translate)
+
+
+def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: int, conv_length: int,
+               open_translate: bool, progress):
     messages_map = {}
     for role in progress.tqdm(roles):
         all_messages = []
         for test_id in range(1, rounds + 1):
-            messages = test_conv(
+            messages = test_conv_by_dialogue(
                 test_id=test_id,
                 model=model,
                 role=role,
+                dialogues=dialogues,
                 conv_length=conv_length,
                 nsfw=True,
-                open_translate=open_translate,
-                dialogue_type=dialogue_type
+                open_translate=open_translate
             )
             all_messages.extend(messages)
         messages_map[role.name] = all_messages
     return messages_map
 
 
-def start_gen(model: str, roles: list[RoleInfo], rounds: int, conv_length: int, open_translate: bool, progress) -> str:
+def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: int, conv_length: int,
+              open_translate: bool, progress) -> str:
     feishu_sdk = FeiShuSdk()
     map_data = start_test(
         model=model,
         roles=roles,
+        dialogues=dialogue,
         rounds=rounds,
         conv_length=conv_length,
         open_translate=open_translate,
-        dialogue_type=DialogueType.CSV,
         progress=progress
     )
     path = create_worksheet(f"{model}对话测试-{generate_random_id(4)}", map_data)
