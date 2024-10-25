@@ -5,7 +5,8 @@ from tools import load_data
 from uis.home.core import RoleInfo, start_gen
 
 if __name__ == '__main__':
-    ai_model = 'gpt-4o-mini-2024-07-18-only-ai-two-conv'
+    # ai_model = 'gpt-4o-mini-2024-07-18-only-ai-two-conv'
+    ai_model = 'gpt-4o-mini-2024-07-18-ai_poly25_two_conv'
     role_file = 'test_case/character.csv'
     dialogue_file = 'test_case/dialogue.csv'
     rounds = 10

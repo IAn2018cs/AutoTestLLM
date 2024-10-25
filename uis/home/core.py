@@ -28,12 +28,12 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
         first=role.first,
         nsfw=nsfw
     )
-    pbar.set_description(f"Conversation test {test_id}")
     for index in range(conv_length):
         bot.ask(
             msg=dialogues[index % len(dialogues)]
         )
         time.sleep(config.dialogue_sleep)
+        pbar.set_description(f"Conversation test {test_id}, chat order: {index}")
         pbar.update(1)
     return bot.get_conversation(open_translate)
 
