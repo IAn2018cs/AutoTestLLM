@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import gradio as gr
+import tqdm
 
 import config
 from tools import load_data_with_upload
@@ -10,7 +11,8 @@ from uis.tab_ids import TabId
 all_models = config.ft_models
 
 
-def start_gan(ai_model, rounds, conv_length, open_translate, role_file, dialogue_file, progress=gr.Progress()):
+def start_gan(ai_model, rounds, conv_length, open_translate, role_file, dialogue_file,
+              progress=gr.Progress(track_tqdm=True)):
     try:
         if not str(role_file).endswith('csv') or not str(dialogue_file).endswith('csv'):
             raise gr.Error("只支持上传 csv 文件")
@@ -32,7 +34,7 @@ def start_gan(ai_model, rounds, conv_length, open_translate, role_file, dialogue
         for item in dialogue_list:
             dialogue.append(item['content'])
 
-        result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, progress)
+        result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, tqdm)
         return gr.Markdown(f"## 飞书文档链接: [{result_url}]({result_url})")
     except Exception as e:
         raise gr.Error(f"{e}")
