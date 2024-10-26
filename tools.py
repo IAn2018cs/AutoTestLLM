@@ -5,6 +5,7 @@ import json
 import os
 import random
 import string
+from datetime import datetime
 from os import PathLike
 from typing import AnyStr
 
@@ -82,3 +83,12 @@ def load_data(csv_path, usecols):
 def generate_random_id(length=10):
     characters = string.ascii_letters + string.digits  # 包含所有字母（大写和小写）和数字
     return ''.join(random.choice(characters) for _ in range(length))  # 随机选择字符
+
+
+def get_current_time(format='%Y-%m-%d-%H-%M'):
+    """
+    获取当前时间的格式化字符串
+    :param format: 时间格式，默认为'%Y-%m-%d-%H-%M'
+    :return: 格式化后的时间字符串
+    """
+    return datetime.now().strftime(format)

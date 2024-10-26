@@ -6,7 +6,7 @@ import config
 from feishu.excel_tools import create_worksheet
 from feishu.feishu_sdk import FeiShuSdk
 from roleplay_bot import RoleplayBot
-from tools import generate_random_id
+from tools import generate_random_id, get_current_time
 
 
 class RoleInfo:
@@ -73,6 +73,9 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
 
 def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: int, conv_length: int,
               open_translate: bool, progress) -> str:
+    task_id = f"{get_current_time()}-{generate_random_id()}"
+    print(
+        f'{task_id}: start test, model: {model}, rounds: {rounds}, conv_length: {conv_length}, open_translate: {open_translate}')
     feishu_sdk = FeiShuSdk()
     map_data = start_test(
         model=model,
@@ -85,4 +88,5 @@ def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: in
     )
     path = create_worksheet(f"{model}对话测试-{generate_random_id(4)}", map_data)
     url, _ = feishu_sdk.create_cloud_docs(path, "sheet")
+    print(f'{task_id}: end test')
     return url
