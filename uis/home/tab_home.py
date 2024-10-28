@@ -1,7 +1,6 @@
 # coding=utf-8
 
 import gradio as gr
-import tqdm
 
 import config
 from tools import load_data_with_upload
@@ -33,8 +32,7 @@ def start_gan(ai_model, rounds, conv_length, open_translate, role_file, dialogue
         dialogue = []
         for item in dialogue_list:
             dialogue.append(item['content'])
-
-        result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, tqdm)
+        result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate)
         return gr.Markdown(f"## 飞书文档链接: [{result_url}]({result_url})")
     except Exception as e:
         raise gr.Error(f"{e}")

@@ -1,5 +1,4 @@
 # coding=utf-8
-import tqdm
 
 from tools import load_data
 from uis.home.core import RoleInfo, start_gen
@@ -26,5 +25,5 @@ if __name__ == '__main__':
     dialogue = []
     for item in dialogue_list:
         dialogue.append(item['content'])
-    result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, tqdm)
+    result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate)
     print(result_url)

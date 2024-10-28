@@ -2,6 +2,8 @@
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+from tqdm import tqdm
+
 import config
 from feishu.excel_tools import create_worksheet
 from feishu.feishu_sdk import FeiShuSdk
@@ -18,8 +20,7 @@ class RoleInfo:
 
 
 def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: list[str], conv_length: int,
-                          nsfw: bool, open_translate: bool,
-                          pbar):
+                          nsfw: bool, open_translate: bool):
     bot = RoleplayBot(
         test_id=test_id,
         model=model,
@@ -33,16 +34,14 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
             msg=dialogues[index % len(dialogues)]
         )
         time.sleep(config.dialogue_sleep)
-        pbar.set_description(f"{role.name} Conversation test {test_id}, chat order: {index}")
-        pbar.update(1)
     return bot.get_conversation(open_translate)
 
 
 def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: int, conv_length: int,
-               open_translate: bool, progress):
+               open_translate: bool):
     messages_map = {}
-    total = len(roles) * rounds * conv_length
-    with progress.tqdm(total=total) as pbar:
+    total = len(roles) * rounds
+    with tqdm(total=total) as pbar:
         with ThreadPoolExecutor(max_workers=config.max_workers) as executor:
             for role in roles:
                 futures = []
@@ -56,8 +55,7 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
                         dialogues=dialogues,
                         conv_length=conv_length,
                         nsfw=True,
-                        open_translate=open_translate,
-                        pbar=pbar
+                        open_translate=open_translate
                     )
                     futures.append((test_id, future))
 
@@ -66,13 +64,15 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
                 for test_id, future in sorted(futures, key=lambda x: x[0]):
                     messages = future.result()
                     all_messages.extend(messages)
+                    pbar.set_description(f"{role.name} Conversation test {test_id}")
+                    pbar.update(1)
 
                 messages_map[role.name] = all_messages
     return messages_map
 
 
 def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: int, conv_length: int,
-              open_translate: bool, progress) -> str:
+              open_translate: bool) -> str:
     task_id = f"{get_current_time()}-{generate_random_id()}"
     print(
         f'{task_id}: start test, model: {model}, rounds: {rounds}, conv_length: {conv_length}, open_translate: {open_translate}')
@@ -83,8 +83,7 @@ def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: in
         dialogues=dialogue,
         rounds=rounds,
         conv_length=conv_length,
-        open_translate=open_translate,
-        progress=progress
+        open_translate=open_translate
     )
     path = create_worksheet(f"{model}对话测试-{generate_random_id(4)}", map_data)
     url, _ = feishu_sdk.create_cloud_docs(path, "sheet")
