@@ -29,10 +29,15 @@ class ConvBot:
         return self
 
     def ask(self, msg: str, **kwargs) -> str:
-        self.add_user_message(msg)
-        result, _, _, _ = self.llm_client.generate(self.model, self.messages, False, **kwargs)
-        self.add_assistant_message(result)
-        return result
+        try:
+            self.add_user_message(msg)
+            result, _, _, _ = self.llm_client.generate(self.model, self.messages, False, **kwargs)
+            self.add_assistant_message(result)
+            return result
+        except:
+            self.messages.pop()
+            return ""
+
 
     def clear(self):
         self.messages.clear()
