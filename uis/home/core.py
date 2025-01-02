@@ -20,14 +20,19 @@ class RoleInfo:
 
 
 def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: list[str], conv_length: int,
-                          nsfw: bool, open_translate: bool):
+                          nsfw: bool, open_translate: bool, jailbreak: bool,
+                          base_system: str, nsfw_system: str, jailbreak_system: str):
     bot = RoleplayBot(
         test_id=test_id,
         model=model,
         name=role.name,
         brief_intro=role.brief_intro,
         first=role.first,
-        nsfw=nsfw
+        nsfw=nsfw,
+        jailbreak=jailbreak,
+        base_system=base_system,
+        nsfw_system=nsfw_system,
+        jailbreak_system=jailbreak_system
     )
     for index in range(conv_length):
         bot.ask(
@@ -38,7 +43,8 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
 
 
 def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: int, conv_length: int,
-               open_translate: bool):
+               open_translate: bool, nsfw: bool, jailbreak: bool,
+               base_system: str, nsfw_system: str, jailbreak_system: str):
     messages_map = {}
     total = len(roles) * rounds
     with tqdm(total=total) as pbar:
@@ -54,8 +60,12 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
                         role=role,
                         dialogues=dialogues,
                         conv_length=conv_length,
-                        nsfw=True,
-                        open_translate=open_translate
+                        nsfw=nsfw,
+                        open_translate=open_translate,
+                        jailbreak=jailbreak,
+                        base_system=base_system,
+                        nsfw_system=nsfw_system,
+                        jailbreak_system=jailbreak_system
                     )
                     futures.append((test_id, future))
 
@@ -72,10 +82,11 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
 
 
 def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: int, conv_length: int,
-              open_translate: bool) -> str:
+              open_translate: bool, nsfw: bool, jailbreak: bool,
+              base_system: str = None, nsfw_system: str = None, jailbreak_system: str = None) -> str:
     task_id = f"{get_current_time()}-{generate_random_id()}"
     print(
-        f'{task_id}: start test, model: {model}, rounds: {rounds}, conv_length: {conv_length}, open_translate: {open_translate}')
+        f'{task_id}: start test, model: {model}, rounds: {rounds}, conv_length: {conv_length}, open_translate: {open_translate}, nsfw: {nsfw}, jailbreak: {jailbreak}')
     feishu_sdk = FeiShuSdk()
     map_data = start_test(
         model=model,
@@ -83,7 +94,12 @@ def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: in
         dialogues=dialogue,
         rounds=rounds,
         conv_length=conv_length,
-        open_translate=open_translate
+        open_translate=open_translate,
+        nsfw=nsfw,
+        jailbreak=jailbreak,
+        base_system=base_system,
+        nsfw_system=nsfw_system,
+        jailbreak_system=jailbreak_system
     )
     path = create_worksheet(f"{model}对话测试-{generate_random_id(4)}", map_data)
     url, _ = feishu_sdk.create_cloud_docs(path, "sheet")

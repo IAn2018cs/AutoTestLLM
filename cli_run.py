@@ -10,7 +10,9 @@ if __name__ == '__main__':
     dialogue_file = 'test_case/dialogue.csv'
     rounds = 10
     conv_length = 100
-    open_translate = True
+    open_translate = False
+    nsfw = True
+    jailbreak = True
 
     role_list = load_data(role_file, ['Name', 'first_message', 'system'])
     roles = []
@@ -25,5 +27,5 @@ if __name__ == '__main__':
     dialogue = []
     for item in dialogue_list:
         dialogue.append(item['content'])
-    result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate)
+    result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, nsfw, jailbreak)
     print(result_url)

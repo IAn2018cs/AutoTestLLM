@@ -1,33 +1,39 @@
 # coding=utf-8
 import time
+from typing import Optional
 
 from tqdm import tqdm
 
 import config
+from config import base_system
 from llm.conv_bot import ConvBot
 from translate_factory import translate_text, LangType
 
 
 class RoleplayBot:
 
-    def __init__(self, test_id: int, model: str, name: str, brief_intro: str, first: str, nsfw: bool = True):
+    def __init__(self, test_id: int, model: str, name: str, brief_intro: str, first: str,
+                 nsfw: bool = True, jailbreak: bool = True,
+                 base_system: Optional[str] = None,
+                 nsfw_system: Optional[str] = None,
+                 jailbreak_system: Optional[str] = None):
         self.test_id = test_id
         self.name = name
         self.brief_intro = brief_intro
         self.first = first
         self.nsfw = nsfw
+        self.jailbreak = jailbreak
+        self.base_system = base_system if base_system else config.base_system.replace('{{char}}', name)
+        self.nsfw_system = nsfw_system if nsfw_system else config.nsfw_system
+        self.jailbreak_system = jailbreak_system if jailbreak_system else config.jailbreak_system
         self.bot = ConvBot(model)
         self.__init_conv__()
 
     def __init_conv__(self):
-        self.bot.add_system_message(
-            f"Write {self.name}'s next reply in a fictional chat between {self.name} and User. Write 1 reply only in internet RP style, italicize actions, and avoid quotation marks. Use markdown. Be proactive, creative, and drive the plot and conversation forward. Write at least 1 paragraph, up to 2. Always stay in character and avoid repetition.Maximum response content of 200 characters."
-        )
+        self.bot.add_system_message(base_system)
         self.bot.add_system_message(self.brief_intro)
         if self.nsfw:
-            self.bot.add_system_message(
-                "NSFW/Smut is allowed.Make sure you have a pleasant conversation with Users, even with some NSFW means.  If your characters are in a relationship, don't reject users' nsfw topics."
-            )
+            self.bot.add_system_message(self.nsfw_system)
         self.bot.add_system_message("[Start a new Chat]")
         self.bot.add_assistant_message(self.first)
 
@@ -35,7 +41,9 @@ class RoleplayBot:
         return self.bot.ask(
             msg,
             temperature=1,
-            max_tokens=200
+            max_tokens=200,
+            jailbreak=self.jailbreak,
+            jailbreak_system=self.jailbreak_system
         )
 
     def get_last_message(self) -> str:
