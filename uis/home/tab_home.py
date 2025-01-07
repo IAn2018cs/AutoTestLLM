@@ -7,7 +7,7 @@ from tools import load_data_with_upload
 from uis.home.core import start_gen, RoleInfo
 from uis.tab_ids import TabId
 
-all_models = config.ft_models
+all_models = config.ft_models + config.ollama_models
 
 
 def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file,

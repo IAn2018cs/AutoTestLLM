@@ -10,6 +10,9 @@ load_dotenv(override=True)
 openai_api_host: str = os.getenv('OPENAI_API_HOST', default='https://api.openai.com/v1')
 openai_api_key: str = os.getenv('OPENAI_API_KEY')
 
+# ollama
+ollama_api_host: str = os.getenv('OLLAMA_API_HOST', default='http://localhost:11434')
+
 # gcp
 gcp_project_id: str = os.getenv('GCP_PROJECT_ID')
 gcp_private_key: str = os.getenv('GCP_PRIVATE_KEY')
@@ -22,6 +25,7 @@ feishu_app_secret: str = os.getenv('FEISHU_APP_SECRET')
 port: int = int(os.getenv('PORT'))
 
 ft_models: list[str] = os.getenv('FT_MODELS').split(' ')
+ollama_models: list[str] = os.getenv('OLLAMA_MODELS').split(' ')
 
 dialogue_sleep = float(os.getenv('DIALOGUE_SLEEP', default='1'))
 translate_sleep = float(os.getenv('TRANSLATE_SLEEP', default='1'))

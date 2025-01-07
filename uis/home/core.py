@@ -101,7 +101,7 @@ def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: in
         nsfw_system=nsfw_system,
         jailbreak_system=jailbreak_system
     )
-    path = create_worksheet(f"{model}对话测试-{generate_random_id(4)}", map_data)
+    path = create_worksheet(f"{model.replace('/', '-')}对话测试-{generate_random_id(4)}", map_data)
     url, _ = feishu_sdk.create_cloud_docs(path, "sheet")
     print(f'{task_id}: end test')
     return url

@@ -7,7 +7,8 @@ class ConvBot:
 
     def __init__(self, model: str):
         self.model = model
-        self.llm_client = LLMClient(config.openai_api_key, config.openai_api_host, timeout=300)
+        host = config.openai_api_host if model in config.ft_models else config.ollama_api_host
+        self.llm_client = LLMClient(config.openai_api_key, host, timeout=300)
         self.messages = []
 
     def __add_message__(self, role: str, content: str):
