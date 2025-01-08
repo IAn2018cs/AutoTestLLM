@@ -11,7 +11,7 @@ all_models = config.ft_models + config.ollama_models
 
 
 def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file,
-              base_system, nsfw_system, jailbreak_system,
+              base_system, nsfw_system, jailbreak_system, temperature,
               progress=gr.Progress(track_tqdm=True)):
     try:
         if not str(role_file).endswith('csv') or not str(dialogue_file).endswith('csv'):
@@ -33,7 +33,7 @@ def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, ro
         dialogue = []
         for item in dialogue_list:
             dialogue.append(item['content'])
-        result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, nsfw, jailbreak, base_system, nsfw_system, jailbreak_system)
+        result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, nsfw, jailbreak, base_system, nsfw_system, jailbreak_system, temperature)
         return gr.Markdown(f"## 飞书文档链接: [{result_url}]({result_url})")
     except Exception as e:
         raise gr.Error(f"{e}")
@@ -65,6 +65,7 @@ def build_home_ui():
         nsfw = gr.Checkbox(value=True, label="是否加入 NSFW 提示词")
         jailbreak = gr.Checkbox(value=True, label="是否加入 越狱提示词")
         open_translate = gr.Checkbox(value=False, label="是否翻译结果")
+        temperature = gr.Slider(minimum=0, maximum=2, value=0.99, step=0.01, label='temperature')
 
         base_system = gr.TextArea(value=config.base_system, label='主提示词（注意一定要有 {{char}}，这是角色名字的占位）', lines=2)
         nsfw_system = gr.TextArea(value=config.nsfw_system, label='NSFW 提示词', lines=1)
@@ -82,7 +83,7 @@ def build_home_ui():
     start_gen_btn.click(
         fn=start_gan,
         inputs=[
-            ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file, base_system, nsfw_system, jailbreak_system
+            ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file, base_system, nsfw_system, jailbreak_system, temperature
         ],
         outputs=[
             markdown_url

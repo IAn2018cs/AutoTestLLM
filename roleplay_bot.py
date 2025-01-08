@@ -16,7 +16,8 @@ class RoleplayBot:
                  nsfw: bool = True, jailbreak: bool = True,
                  base_system: Optional[str] = None,
                  nsfw_system: Optional[str] = None,
-                 jailbreak_system: Optional[str] = None):
+                 jailbreak_system: Optional[str] = None,
+                 temperature: float = 1):
         self.test_id = test_id
         self.name = name
         self.brief_intro = brief_intro
@@ -26,6 +27,7 @@ class RoleplayBot:
         self.base_system = base_system if base_system else config.base_system.replace('{{char}}', name)
         self.nsfw_system = nsfw_system if nsfw_system else config.nsfw_system
         self.jailbreak_system = jailbreak_system if jailbreak_system else config.jailbreak_system
+        self.temperature = temperature
         self.bot = ConvBot(model)
         self.__init_conv__()
 
@@ -40,7 +42,7 @@ class RoleplayBot:
     def ask(self, msg: str) -> str:
         return self.bot.ask(
             msg,
-            temperature=0.99,
+            temperature=self.temperature,
             max_tokens=200,
             jailbreak=self.jailbreak,
             jailbreak_system=self.jailbreak_system
