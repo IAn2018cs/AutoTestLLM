@@ -40,7 +40,7 @@ class RoleplayBot:
     def ask(self, msg: str) -> str:
         return self.bot.ask(
             msg,
-            temperature=1,
+            temperature=0.99,
             max_tokens=200,
             jailbreak=self.jailbreak,
             jailbreak_system=self.jailbreak_system
