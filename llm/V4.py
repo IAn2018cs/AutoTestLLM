@@ -75,6 +75,7 @@ class LLMClient:
             }
         for key, value in kwargs.items():
             payload[key] = value
+        print(json.dumps(payload, indent=4))
         response = self.session.post(
             url,
             headers=headers,
