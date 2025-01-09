@@ -181,7 +181,7 @@ class FeiShuSdk(object):
                           after_delete: bool = True) -> (Optional[str], Optional[str]):
         mount_key = None
         files = self.__query_all_files__()
-        root_fold_name = 'AutoLLM'
+        root_fold_name = 'AutoLLM2'
         for file in files:
             if file['name'] == root_fold_name:
                 mount_key = file['token']

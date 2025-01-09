@@ -11,7 +11,7 @@ all_models = config.ft_models + config.ollama_models
 
 
 def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file,
-              base_system, nsfw_system, jailbreak_system, temperature,
+              base_system, nsfw_system, jailbreak_system, temperature, max_tokens,
               progress=gr.Progress(track_tqdm=True)):
     try:
         if not str(role_file).endswith('csv') or not str(dialogue_file).endswith('csv'):
@@ -33,7 +33,7 @@ def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, ro
         dialogue = []
         for item in dialogue_list:
             dialogue.append(item['content'])
-        result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, nsfw, jailbreak, base_system, nsfw_system, jailbreak_system, temperature)
+        result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, nsfw, jailbreak, base_system, nsfw_system, jailbreak_system, temperature, max_tokens)
         return gr.Markdown(f"## 飞书文档链接: [{result_url}]({result_url})")
     except Exception as e:
         raise gr.Error(f"{e}")
@@ -66,6 +66,7 @@ def build_home_ui():
         jailbreak = gr.Checkbox(value=True, label="是否加入 越狱提示词")
         open_translate = gr.Checkbox(value=False, label="是否翻译结果")
         temperature = gr.Slider(minimum=0, maximum=2, value=0.99, step=0.01, label='temperature')
+        max_tokens = gr.Slider(minimum=1, maximum=4096, value=128, step=1, label='max tokens')
 
         base_system = gr.TextArea(value=config.base_system, label='主提示词（注意一定要有 {{char}}，这是角色名字的占位）', lines=2)
         nsfw_system = gr.TextArea(value=config.nsfw_system, label='NSFW 提示词', lines=1)
@@ -83,7 +84,7 @@ def build_home_ui():
     start_gen_btn.click(
         fn=start_gan,
         inputs=[
-            ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file, base_system, nsfw_system, jailbreak_system, temperature
+            ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file, base_system, nsfw_system, jailbreak_system, temperature, max_tokens
         ],
         outputs=[
             markdown_url

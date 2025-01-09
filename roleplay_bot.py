@@ -14,7 +14,7 @@ class RoleplayBot:
                  base_system: Optional[str] = None,
                  nsfw_system: Optional[str] = None,
                  jailbreak_system: Optional[str] = None,
-                 temperature: float = 1):
+                 temperature: float = 1, max_tokens = 200):
         self.test_id = test_id
         self.name = name
         self.brief_intro = brief_intro
@@ -25,6 +25,7 @@ class RoleplayBot:
         self.nsfw_system = nsfw_system if nsfw_system else config.nsfw_system
         self.jailbreak_system = jailbreak_system if jailbreak_system else config.jailbreak_system
         self.temperature = temperature
+        self.max_tokens = max_tokens
         self.is_ollama_model = model in config.ollama_models
         host = config.ollama_api_host if self.is_ollama_model else config.openai_api_host
         self.bot = ConvBot(model, host)
@@ -45,7 +46,7 @@ class RoleplayBot:
         return self.bot.ask(
             msg,
             temperature=self.temperature,
-            max_tokens=200,
+            max_tokens=self.max_tokens,
             jailbreak=False if self.is_ollama_model else self.jailbreak,
             jailbreak_system=self.jailbreak_system
         )

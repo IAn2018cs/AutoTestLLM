@@ -22,7 +22,7 @@ class RoleInfo:
 def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: list[str], conv_length: int,
                           nsfw: bool, open_translate: bool, jailbreak: bool,
                           base_system: str, nsfw_system: str, jailbreak_system: str,
-                          temperature: float):
+                          temperature: float, max_tokens):
     bot = RoleplayBot(
         test_id=test_id,
         model=model,
@@ -34,7 +34,8 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
         base_system=base_system,
         nsfw_system=nsfw_system,
         jailbreak_system=jailbreak_system,
-        temperature=temperature
+        temperature=temperature,
+        max_tokens=max_tokens
     )
     print('start chat dialogue')
     for index in range(conv_length):
@@ -49,7 +50,7 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
 def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: int, conv_length: int,
                open_translate: bool, nsfw: bool, jailbreak: bool,
                base_system: str, nsfw_system: str, jailbreak_system: str,
-               temperature: float):
+               temperature: float, max_tokens):
     messages_map = {}
     total = len(roles) * rounds
     with tqdm(total=total) as pbar:
@@ -71,7 +72,8 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
                         base_system=base_system,
                         nsfw_system=nsfw_system,
                         jailbreak_system=jailbreak_system,
-                        temperature=temperature
+                        temperature=temperature,
+                        max_tokens=max_tokens
                     )
                     futures.append((test_id, future))
 
@@ -90,10 +92,10 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
 def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: int, conv_length: int,
               open_translate: bool, nsfw: bool, jailbreak: bool,
               base_system: str = None, nsfw_system: str = None, jailbreak_system: str = None,
-              temperature: float = 1) -> str:
+              temperature: float = 1, max_tokens = 200) -> str:
     task_id = f"{get_current_time()}-{generate_random_id()}"
     print(
-        f'{task_id}: start test, model: {model}, rounds: {rounds}, conv_length: {conv_length}, open_translate: {open_translate}, nsfw: {nsfw}, jailbreak: {jailbreak}')
+        f'{task_id}: start test, model: {model}, rounds: {rounds}, conv_length: {conv_length}, open_translate: {open_translate}, nsfw: {nsfw}, jailbreak: {jailbreak}, temperature: {temperature}, max_tokens: {max_tokens}')
     feishu_sdk = FeiShuSdk()
     map_data = start_test(
         model=model,
@@ -107,10 +109,11 @@ def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: in
         base_system=base_system,
         nsfw_system=nsfw_system,
         jailbreak_system=jailbreak_system,
-        temperature=temperature
+        temperature=temperature,
+        max_tokens=max_tokens
     )
     path = create_worksheet(f"{model.replace('/', '-')}对话测试-{generate_random_id(4)}", map_data)
     print('start upload docs')
     url, _ = feishu_sdk.create_cloud_docs(path, "sheet")
-    print(f'{task_id}: end test')
+    print(f'{task_id}: end test\n\n')
     return url
