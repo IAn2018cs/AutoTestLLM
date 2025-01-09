@@ -67,7 +67,6 @@ class LLMClient:
             "stream": False,
             # kwargs
             "temperature": kwargs.get("temperature", self.temperature),
-            "n": kwargs.get("n", 1),
         }
         if json_format:
             payload["response_format"] = {

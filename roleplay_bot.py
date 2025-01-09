@@ -48,7 +48,6 @@ class RoleplayBot:
                 msg,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
-                top_p=0.9,
                 frequency_penalty=1.1,
                 jailbreak=False,
                 jailbreak_system=self.jailbreak_system
