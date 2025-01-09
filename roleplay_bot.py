@@ -5,7 +5,6 @@ from typing import Optional
 from tqdm import tqdm
 
 import config
-from config import base_system
 from llm.conv_bot import ConvBot
 from translate_factory import translate_text, LangType
 
@@ -28,23 +27,28 @@ class RoleplayBot:
         self.nsfw_system = nsfw_system if nsfw_system else config.nsfw_system
         self.jailbreak_system = jailbreak_system if jailbreak_system else config.jailbreak_system
         self.temperature = temperature
-        self.bot = ConvBot(model)
+        self.is_ollama_model = model in config.ollama_models
+        host = config.ollama_api_host if self.is_ollama_model else config.openai_api_host
+        self.bot = ConvBot(model, host)
         self.__init_conv__()
 
     def __init_conv__(self):
-        self.bot.add_system_message(base_system)
-        self.bot.add_system_message(self.brief_intro)
-        if self.nsfw:
-            self.bot.add_system_message(self.nsfw_system)
-        self.bot.add_system_message("[Start a new Chat]")
-        self.bot.add_assistant_message(self.first)
+        if self.is_ollama_model:
+            self.bot.add_system_message(self.base_system)
+        else:
+            self.bot.add_system_message(self.base_system)
+            self.bot.add_system_message(self.brief_intro)
+            if self.nsfw:
+                self.bot.add_system_message(self.nsfw_system)
+            self.bot.add_system_message("[Start a new Chat]")
+            self.bot.add_assistant_message(self.first)
 
     def ask(self, msg: str) -> str:
         return self.bot.ask(
             msg,
             temperature=self.temperature,
             max_tokens=200,
-            jailbreak=self.jailbreak,
+            jailbreak=False if self.is_ollama_model else self.jailbreak,
             jailbreak_system=self.jailbreak_system
         )
 

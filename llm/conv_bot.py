@@ -5,9 +5,8 @@ from llm.V4 import LLMClient
 
 class ConvBot:
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, host: str):
         self.model = model
-        host = config.openai_api_host if model in config.ft_models else config.ollama_api_host
         self.llm_client = LLMClient(config.openai_api_key, host, timeout=300)
         self.messages = []
 
