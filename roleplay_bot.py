@@ -56,32 +56,38 @@ class RoleplayBot:
         return self.bot.messages[-1]['content']
 
     def get_conversation(self, open_translate: bool) -> list[dict]:
-        result = [
-            {
-                'test_id': self.test_id,
-                'order_id': 1,
-                'role': 'system',
-                'content': self.brief_intro,
-                'translate': translate_text(
-                    self.brief_intro,
-                    source=LangType.EN,
-                    target=LangType.ZH
-                ) if open_translate else ""
-            },
-            {
-                'test_id': self.test_id,
-                'order_id': 2,
-                'role': 'assistant',
-                'content': self.first,
-                'translate': translate_text(
-                    self.first,
-                    source=LangType.EN,
-                    target=LangType.ZH
-                ) if open_translate else ""
-            }
-        ]
-        sub_length = 5 if self.nsfw else 4
-        order_id = 3
+        result = []
+        if not self.is_ollama_model:
+            result.extend([
+                {
+                    'test_id': self.test_id,
+                    'order_id': 1,
+                    'role': 'system',
+                    'content': self.brief_intro,
+                    'translate': translate_text(
+                        self.brief_intro,
+                        source=LangType.EN,
+                        target=LangType.ZH
+                    ) if open_translate else ""
+                },
+                {
+                    'test_id': self.test_id,
+                    'order_id': 2,
+                    'role': 'assistant',
+                    'content': self.first,
+                    'translate': translate_text(
+                        self.first,
+                        source=LangType.EN,
+                        target=LangType.ZH
+                    ) if open_translate else ""
+                }
+            ])
+        if self.is_ollama_model:
+            sub_length = 1
+            order_id = 1
+        else:
+            sub_length = 5 if self.nsfw else 4
+            order_id = 3
         for message in tqdm(self.bot.messages[sub_length:], desc="Translation conversation"):
             result.append(
                 {
