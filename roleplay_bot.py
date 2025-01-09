@@ -43,13 +43,24 @@ class RoleplayBot:
             self.bot.add_assistant_message(self.first)
 
     def ask(self, msg: str) -> str:
-        return self.bot.ask(
-            msg,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-            jailbreak=False if self.is_ollama_model else self.jailbreak,
-            jailbreak_system=self.jailbreak_system
-        )
+        if self.is_ollama_model:
+            return self.bot.ask(
+                msg,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                top_p=0.9,
+                frequency_penalty=1.1,
+                jailbreak=False,
+                jailbreak_system=self.jailbreak_system
+            )
+        else:
+            return self.bot.ask(
+                msg,
+                temperature=self.temperature,
+                max_tokens=self.max_tokens,
+                jailbreak=self.jailbreak,
+                jailbreak_system=self.jailbreak_system
+            )
 
     def get_last_message(self) -> str:
         return self.bot.messages[-1]['content']
