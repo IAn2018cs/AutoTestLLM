@@ -2,8 +2,6 @@
 import time
 from typing import Optional
 
-from tqdm import tqdm
-
 import config
 from llm.conv_bot import ConvBot
 from translate_factory import translate_text, LangType
@@ -64,22 +62,14 @@ class RoleplayBot:
                     'order_id': 1,
                     'role': 'system',
                     'content': self.brief_intro,
-                    'translate': translate_text(
-                        self.brief_intro,
-                        source=LangType.EN,
-                        target=LangType.ZH
-                    ) if open_translate else ""
+                    'translate': ""
                 },
                 {
                     'test_id': self.test_id,
                     'order_id': 2,
                     'role': 'assistant',
                     'content': self.first,
-                    'translate': translate_text(
-                        self.first,
-                        source=LangType.EN,
-                        target=LangType.ZH
-                    ) if open_translate else ""
+                    'translate': ""
                 }
             ])
         if self.is_ollama_model:
@@ -88,21 +78,28 @@ class RoleplayBot:
         else:
             sub_length = 5 if self.nsfw else 4
             order_id = 3
-        for message in tqdm(self.bot.messages[sub_length:], desc="Translation conversation"):
+        if open_translate:
+            print(f'start translate')
+        for message in self.bot.messages[sub_length:]:
+            translate_msg = ""
+            if open_translate:
+                translate_msg = translate_text(
+                    message['content'],
+                    source=LangType.EN,
+                    target=LangType.ZH
+                )
             result.append(
                 {
                     'test_id': self.test_id,
                     'order_id': order_id,
                     'role': message['role'],
                     'content': message['content'],
-                    'translate': translate_text(
-                        message['content'],
-                        source=LangType.EN,
-                        target=LangType.ZH
-                    ) if open_translate else ""
+                    'translate': translate_msg
                 }
             )
             order_id += 1
             if open_translate:
                 time.sleep(config.translate_sleep)
+        if open_translate:
+            print(f'end translate')
         return result
