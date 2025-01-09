@@ -36,11 +36,13 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
         jailbreak_system=jailbreak_system,
         temperature=temperature
     )
+    print('start chat dialogue')
     for index in range(conv_length):
         bot.ask(
             msg=dialogues[index % len(dialogues)]
         )
         time.sleep(config.dialogue_sleep)
+    print('start get conversation')
     return bot.get_conversation(open_translate)
 
 
@@ -108,6 +110,7 @@ def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: in
         temperature=temperature
     )
     path = create_worksheet(f"{model.replace('/', '-')}对话测试-{generate_random_id(4)}", map_data)
+    print('start upload docs')
     url, _ = feishu_sdk.create_cloud_docs(path, "sheet")
     print(f'{task_id}: end test')
     return url
