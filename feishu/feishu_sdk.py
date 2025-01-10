@@ -15,6 +15,7 @@ class FeiShuSdk(object):
 
     def __init__(self):
         self.TAG = 'FeiShuSdk'
+        self.timeout = 10
         self.app_id = config.feishu_app_id
         self.app_secret = config.feishu_app_secret
         retries = Retry(total=3, backoff_factor=1,
@@ -28,7 +29,7 @@ class FeiShuSdk(object):
         url = 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal'
         headers = {'Content-Type': 'application/json'}
         params = {'app_id': self.app_id, 'app_secret': self.app_secret}
-        response = requests.request('POST', url, params=params, headers=headers)
+        response = requests.request('POST', url, params=params, headers=headers, timeout=self.timeout)
         token = response.json()
         return token['tenant_access_token']
 
@@ -54,7 +55,7 @@ class FeiShuSdk(object):
             }
             multi_form = MultipartEncoder(form)
             headers['Content-Type'] = multi_form.content_type
-            response = self.session.post(url, headers=headers, data=multi_form)
+            response = self.session.post(url, headers=headers, data=multi_form, timeout=self.timeout)
             if response.ok:
                 return response.json()['data']['file_token']
             print(f"__upload_file__ error: {response.text}")
@@ -78,7 +79,7 @@ class FeiShuSdk(object):
                 },
                 'type': doc_type
             }
-            response = self.session.post(url, headers=headers, json=data)
+            response = self.session.post(url, headers=headers, json=data, timeout=self.timeout)
             if response.ok:
                 return response.json()['data']['ticket']
             print(f"__create_import_task__ error: {response.text}")
@@ -91,7 +92,7 @@ class FeiShuSdk(object):
         try:
             url = f'https://open.feishu.cn/open-apis/drive/v1/import_tasks/{ticket}'
             headers = {'Authorization': f'Bearer {self.__get_tenant_access_token__()}'}
-            response = self.session.get(url, headers=headers)
+            response = self.session.get(url, headers=headers, timeout=self.timeout)
             if response.ok:
                 result = response.json()['data']['result']
                 if 'url' in result:
@@ -105,7 +106,7 @@ class FeiShuSdk(object):
         try:
             url = 'https://open.feishu.cn/open-apis/drive/explorer/v2/root_folder/meta'
             headers = {'Authorization': f'Bearer {self.__get_tenant_access_token__()}'}
-            response = self.session.get(url, headers=headers)
+            response = self.session.get(url, headers=headers, timeout=self.timeout)
             if response.ok:
                 return response.json()['data']['token']
             print(f"__query_cloud_root_folder__ error: {response.text}")
@@ -122,7 +123,7 @@ class FeiShuSdk(object):
                 "name": name,
                 "folder_token": folder_token
             }
-            response = self.session.post(url, headers=headers, json=data)
+            response = self.session.post(url, headers=headers, json=data, timeout=self.timeout)
             if response.ok:
                 return response.json()['data']['token']
             print(f"__create_cloud_folder__ error: {response.text}")
@@ -143,7 +144,7 @@ class FeiShuSdk(object):
                 "link_share_entity": "tenant_editable",
                 "invite_external": False
             }
-            response = self.session.patch(url, headers=headers, data=data)
+            response = self.session.patch(url, headers=headers, data=data, timeout=self.timeout)
             if response.ok:
                 return True
             print(f"__update_cloud_docs_permission__ error: {response.text}")
@@ -162,7 +163,7 @@ class FeiShuSdk(object):
                 params['folder_token'] = folder_token
             if page_token:
                 params['page_token'] = page_token
-            response = self.session.get(url, headers=headers, params=params)
+            response = self.session.get(url, headers=headers, params=params, timeout=self.timeout)
             data = response.json()
             has_more = data['data']['has_more']
             new_list = data['data']['files']
@@ -181,7 +182,7 @@ class FeiShuSdk(object):
                           after_delete: bool = True) -> (Optional[str], Optional[str]):
         mount_key = None
         files = self.__query_all_files__()
-        root_fold_name = 'AutoLLM2'
+        root_fold_name = 'AutoLLM3'
         for file in files:
             if file['name'] == root_fold_name:
                 mount_key = file['token']
@@ -192,6 +193,7 @@ class FeiShuSdk(object):
         filename = os.path.basename(file_path)
         filename_without_ext, file_extension = os.path.splitext(filename)
         extension = file_extension.replace(".", "")
+        print(f'statr upload file')
         file_token = self.__upload_file__(file_path, doc_type)
 
         if file_token is None:
@@ -200,6 +202,7 @@ class FeiShuSdk(object):
         if mount_key is None:
             print(f"create_cloud_docs error: mount_key is None")
             return None, None
+        print(f'statr create import file task')
         ticket = self.__create_import_task__(file_token, filename_without_ext, extension, doc_type, mount_key)
         if ticket is None:
             print(f"create_cloud_docs error: ticket is None")
