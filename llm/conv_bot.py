@@ -1,13 +1,17 @@
 # coding=utf-8
 import config
 from llm.V4 import LLMClient
+from llm.ollama import OllamaLLMClient
 
 
 class ConvBot:
 
-    def __init__(self, model: str, host: str):
+    def __init__(self, model: str, is_ollama_model: bool):
         self.model = model
-        self.llm_client = LLMClient(config.openai_api_key, host, timeout=300)
+        if is_ollama_model:
+            self.llm_client = OllamaLLMClient(config.ollama_api_host, timeout=300)
+        else:
+            self.llm_client = LLMClient(config.openai_api_key, config.openai_api_host, timeout=300)
         self.messages = []
 
     def __add_message__(self, role: str, content: str):
@@ -44,7 +48,6 @@ class ConvBot:
         except:
             self.messages.pop()
             return ""
-
 
     def clear(self):
         self.messages.clear()

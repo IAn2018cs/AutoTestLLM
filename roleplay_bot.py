@@ -27,8 +27,7 @@ class RoleplayBot:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.is_ollama_model = model in config.ollama_models
-        host = config.ollama_api_host if self.is_ollama_model else config.openai_api_host
-        self.bot = ConvBot(model, host)
+        self.bot = ConvBot(model, self.is_ollama_model)
         self.__init_conv__()
 
     def __init_conv__(self):
@@ -46,9 +45,18 @@ class RoleplayBot:
         if self.is_ollama_model:
             return self.bot.ask(
                 msg,
+                num_predict=self.max_tokens,
                 temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                frequency_penalty=1.1,
+                mirostat=0,
+                mirostat_eta=0.1,
+                mirostat_tau=5.0,
+                top_k=40,
+                top_p=0.9,
+                min_p=0.0,
+                repeat_penalty=1.1,
+                repeat_last_n=64,
+                tfs_z=1,
+                num_ctx=2048,
                 jailbreak=False,
                 jailbreak_system=self.jailbreak_system
             )
