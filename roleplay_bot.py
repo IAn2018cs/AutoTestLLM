@@ -51,12 +51,14 @@ class RoleplayBot:
                 mirostat_eta=0.1,
                 mirostat_tau=5.0,
                 top_k=40,
-                top_p=0.9,
+                top_p=1,
                 min_p=0.0,
                 repeat_penalty=1.1,
                 repeat_last_n=64,
                 tfs_z=1,
                 num_ctx=2048,
+                frequency_penalty=0,
+                presence_penalty=1.1,
                 jailbreak=False,
                 jailbreak_system=self.jailbreak_system
             )
