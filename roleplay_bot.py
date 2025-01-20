@@ -22,7 +22,7 @@ class RoleplayBot:
         self.first = first
         self.nsfw = nsfw
         self.jailbreak = jailbreak
-        self.base_system = base_system if base_system else config.base_system.replace('{{char}}', name)
+        self.base_system = base_system.replace('{{char}}', name) if base_system else config.base_system.replace('{{char}}', name)
         self.nsfw_system = nsfw_system if nsfw_system else config.nsfw_system
         self.jailbreak_system = jailbreak_system if jailbreak_system else config.jailbreak_system
         self.temperature = temperature
