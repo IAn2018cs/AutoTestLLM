@@ -16,6 +16,7 @@ class RoleplayBot:
                  jailbreak_system: Optional[str] = None,
                  temperature: float = 1, max_tokens = 200, presence_penalty = 1.1):
         self.test_id = test_id
+        self.model = model
         self.name = name
         self.brief_intro = brief_intro
         self.first = first
@@ -32,7 +33,7 @@ class RoleplayBot:
         self.__init_conv__()
 
     def __init_conv__(self):
-        if self.is_ollama_model:
+        if self.is_ollama_model or 'qwen' in self.model.lower():
             self.bot.add_system_message(self.base_system)
         else:
             self.bot.add_system_message(self.base_system)
@@ -64,20 +65,32 @@ class RoleplayBot:
                 jailbreak_system=self.jailbreak_system
             )
         else:
-            return self.bot.ask(
-                msg,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                jailbreak=self.jailbreak,
-                jailbreak_system=self.jailbreak_system
-            )
+            if 'qwen' in self.model.lower():
+                return self.bot.ask(
+                    msg,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens,
+                    presence_penalty=self.presence_penalty,
+                    top_p=1,
+                    frequency_penalty=0,
+                    jailbreak=False,
+                    jailbreak_system=self.jailbreak_system
+                )
+            else:
+                return self.bot.ask(
+                    msg,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens,
+                    jailbreak=self.jailbreak,
+                    jailbreak_system=self.jailbreak_system
+                )
 
     def get_last_message(self) -> str:
         return self.bot.messages[-1]['content']
 
     def get_conversation(self, open_translate: bool) -> list[dict]:
         result = []
-        if not self.is_ollama_model:
+        if not self.is_ollama_model and 'qwen' not in self.model.lower():
             result.extend([
                 {
                     'test_id': self.test_id,
@@ -94,7 +107,7 @@ class RoleplayBot:
                     'translate': ""
                 }
             ])
-        if self.is_ollama_model:
+        if self.is_ollama_model or 'qwen' in self.model.lower():
             sub_length = 1
             order_id = 1
         else:
