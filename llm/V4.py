@@ -29,11 +29,9 @@ class LLMClient:
             api_key: str,
             api_url: str = None,
             timeout: float = None,
-            temperature: float = 0.5,
     ) -> None:
         self.api_url: str = api_url or "https://api.openai.com"
         self.api_key: str = api_key
-        self.temperature: float = temperature
         self.timeout: float = timeout
         retries = Retry(total=3, backoff_factor=1,
                         allowed_methods=["HEAD", "GET", "PUT", "OPTIONS", "POST"],
@@ -64,9 +62,7 @@ class LLMClient:
         payload = {
             "model": model,
             "messages": messages,
-            "stream": False,
-            # kwargs
-            "temperature": kwargs.get("temperature", self.temperature),
+            "stream": False
         }
         if json_format:
             payload["response_format"] = {
@@ -108,7 +104,6 @@ class LLMClient:
             **kwargs,
     ):
         param = {
-            "temperature": kwargs.get("temperature", self.temperature),
             "n": kwargs.get("n", 1),
         }
         if kwargs:

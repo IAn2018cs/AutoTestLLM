@@ -14,7 +14,8 @@ class RoleplayBot:
                  base_system: Optional[str] = None,
                  nsfw_system: Optional[str] = None,
                  jailbreak_system: Optional[str] = None,
-                 temperature: float = 1, max_tokens = 200, presence_penalty = 1.1):
+                 temperature: float = 1, max_tokens=200, presence_penalty=1.1, top_p=1.0,
+                 use_temperature=True, use_top_p=False):
         self.test_id = test_id
         self.model = model
         self.name = name
@@ -22,12 +23,16 @@ class RoleplayBot:
         self.first = first
         self.nsfw = nsfw
         self.jailbreak = jailbreak
-        self.base_system = base_system.replace('{{char}}', name) if base_system else config.base_system.replace('{{char}}', name)
+        self.base_system = base_system.replace('{{char}}', name) if base_system else config.base_system.replace(
+            '{{char}}', name)
         self.nsfw_system = nsfw_system if nsfw_system else config.nsfw_system
         self.jailbreak_system = jailbreak_system if jailbreak_system else config.jailbreak_system
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.presence_penalty = presence_penalty
+        self.top_p = top_p
+        self.use_temperature = use_temperature
+        self.use_top_p = use_top_p
         self.is_ollama_model = model in config.ollama_models
         self.bot = ConvBot(model, self.is_ollama_model)
         self.__init_conv__()
@@ -44,46 +49,48 @@ class RoleplayBot:
             self.bot.add_assistant_message(self.first)
 
     def ask(self, msg: str) -> str:
+        args = {
+            'jailbreak_system': self.jailbreak_system
+        }
+        if self.use_temperature:
+            args['temperature'] = self.temperature
+        if self.use_top_p:
+            args['top_p'] = self.top_p
+
         if self.is_ollama_model:
-            return self.bot.ask(
-                msg,
-                num_predict=self.max_tokens,
-                temperature=self.temperature,
-                presence_penalty=self.presence_penalty,
-                mirostat=0,
-                mirostat_eta=0.1,
-                mirostat_tau=5.0,
-                top_k=40,
-                top_p=1,
-                min_p=0.0,
-                repeat_penalty=1.1,
-                repeat_last_n=64,
-                tfs_z=1,
-                num_ctx=2048,
-                frequency_penalty=0,
-                jailbreak=False,
-                jailbreak_system=self.jailbreak_system
-            )
+            args.update({
+                'num_predict': self.max_tokens,
+                'presence_penalty': self.presence_penalty,
+                'mirostat': 0,
+                'mirostat_eta': 0.1,
+                'mirostat_tau': 5.0,
+                'top_k': 40,
+                'min_p': 0.0,
+                'repeat_penalty': 1.1,
+                'repeat_last_n': 64,
+                'tfs_z': 1,
+                'num_ctx': 2048,
+                'frequency_penalty': 0,
+                'jailbreak': False
+            })
         else:
+            args.update({
+                'max_tokens': self.max_tokens,
+            })
             if 'qwen' in self.model.lower():
-                return self.bot.ask(
-                    msg,
-                    temperature=self.temperature,
-                    max_tokens=self.max_tokens,
-                    presence_penalty=self.presence_penalty,
-                    top_p=1,
-                    frequency_penalty=0,
-                    jailbreak=False,
-                    jailbreak_system=self.jailbreak_system
-                )
+                args.update({
+                    'presence_penalty': self.presence_penalty,
+                    'frequency_penalty': 0,
+                    'jailbreak': False
+                })
             else:
-                return self.bot.ask(
-                    msg,
-                    temperature=self.temperature,
-                    max_tokens=self.max_tokens,
-                    jailbreak=self.jailbreak,
-                    jailbreak_system=self.jailbreak_system
-                )
+                args.update({
+                    'jailbreak': self.jailbreak
+                })
+        return self.bot.ask(
+            msg,
+            **args
+        )
 
     def get_last_message(self) -> str:
         return self.bot.messages[-1]['content']

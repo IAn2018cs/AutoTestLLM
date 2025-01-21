@@ -11,7 +11,8 @@ all_models = config.ft_models + config.ollama_models
 
 
 def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file,
-              base_system, nsfw_system, jailbreak_system, temperature, max_tokens, presence_penalty,
+              base_system, nsfw_system, jailbreak_system, temperature, max_tokens, presence_penalty, top_p,
+              use_temperature, use_top_p,
               progress=gr.Progress(track_tqdm=True)):
     try:
         if not str(role_file).endswith('csv') or not str(dialogue_file).endswith('csv'):
@@ -35,7 +36,7 @@ def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, ro
             dialogue.append(item['content'])
         result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate,
                                nsfw, jailbreak, base_system, nsfw_system, jailbreak_system,
-                               temperature, max_tokens, presence_penalty)
+                               temperature, max_tokens, presence_penalty, top_p, use_temperature, use_top_p)
         return gr.Markdown(f"## 飞书文档链接: [{result_url}]({result_url})")
     except Exception as e:
         raise gr.Error(f"{e}")
@@ -67,7 +68,13 @@ def build_home_ui():
         nsfw = gr.Checkbox(value=True, label="是否加入 NSFW 提示词")
         jailbreak = gr.Checkbox(value=True, label="是否加入 越狱提示词")
         open_translate = gr.Checkbox(value=False, label="是否翻译结果")
-        temperature = gr.Slider(minimum=0, maximum=2, value=0.99, step=0.01, label='temperature')
+
+        with gr.Row():
+            temperature = gr.Slider(minimum=0, maximum=2, value=0.99, step=0.01, label='temperature')
+            use_temperature = gr.Checkbox(value=True, label="使用 temperature 参数")
+        with gr.Row():
+            top_p = gr.Slider(minimum=0, maximum=1, value=1, step=0.01, label='top_p')
+            use_top_p = gr.Checkbox(value=False, label="使用 top_p 参数")
         max_tokens = gr.Slider(minimum=1, maximum=4096, value=128, step=1, label='max tokens')
         presence_penalty = gr.Slider(minimum=-2, maximum=2, value=1.1, step=0.01, label='presence penalty')
 
@@ -90,7 +97,8 @@ def build_home_ui():
             ai_model, rounds, conv_length, open_translate, nsfw, jailbreak,
             role_file, dialogue_file,
             base_system, nsfw_system, jailbreak_system,
-            temperature, max_tokens, presence_penalty
+            temperature, max_tokens, presence_penalty, top_p,
+            use_temperature, use_top_p
         ],
         outputs=[
             markdown_url
