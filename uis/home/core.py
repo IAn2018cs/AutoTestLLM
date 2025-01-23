@@ -8,6 +8,7 @@ import config
 from feishu.excel_tools import create_worksheet
 from feishu.feishu_sdk import FeiShuSdk
 from uis.home.roleplay_bot import RoleplayBot
+from utils.qa_quality import llm_dialogue_assessment, llm_nsfw_assessment
 from utils.tools import generate_random_id, get_current_time
 
 
@@ -47,8 +48,13 @@ def start_test(
         rounds: int, conv_length: int, open_translate: bool,
         **kwargs
 ):
+    open_assessment = kwargs.pop('open_assessment', False)
     messages_map = {}
-    total = len(roles) * rounds
+    assessment_list = []
+    if open_assessment:
+        total = len(roles) * rounds * 2
+    else:
+        total = len(roles) * rounds
     with tqdm(total=total) as pbar:
         with ThreadPoolExecutor(max_workers=config.max_workers) as executor:
             for role in roles:
@@ -75,7 +81,23 @@ def start_test(
                     pbar.set_description(f"{role.name} Conversation test {test_id}")
                     pbar.update(1)
 
+                    if open_assessment:
+                        # 评估对话质量
+                        dialogue_assessment_result = llm_dialogue_assessment(role.name, role.brief_intro, role.first,
+                                                                             messages)
+                        nsfw_assessment_result = llm_nsfw_assessment(role.name, messages)
+                        assessment_list.append({
+                            '角色': role.name,
+                            '遍数（test_id）': test_id,
+                            '对话质量评估': dialogue_assessment_result,
+                            'NSFW分析': nsfw_assessment_result
+                        })
+                        pbar.set_description(f"Evaluate conversation quality test {test_id}")
+                        pbar.update(1)
+
                 messages_map[role.name] = all_messages
+    if open_assessment:
+        messages_map['对话评估'] = assessment_list
     return messages_map
 
 

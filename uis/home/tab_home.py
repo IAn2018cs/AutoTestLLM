@@ -15,7 +15,7 @@ all_models.extend([model for model in config.ollama_models if model])
 
 def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, role_file, dialogue_file,
               base_system, nsfw_system, jailbreak_system, temperature, max_tokens, presence_penalty, top_p,
-              use_temperature, use_top_p, max_conv_length,
+              use_temperature, use_top_p, max_conv_length, open_assessment,
               progress=gr.Progress(track_tqdm=True)):
     try:
         if not str(role_file).endswith('csv') or not str(dialogue_file).endswith('csv'):
@@ -50,7 +50,8 @@ def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, ro
             top_p=top_p,
             use_temperature=use_temperature,
             use_top_p=use_top_p,
-            max_conv_length=max_conv_length
+            max_conv_length=max_conv_length,
+            open_assessment=open_assessment
         )
         return gr.Markdown(f"## 飞书文档链接: [{result_url}]({result_url})")
     except Exception as e:
@@ -93,6 +94,7 @@ def build_home_ui():
             nsfw = gr.Checkbox(value=False, label="是否加入 NSFW 提示词")
             jailbreak = gr.Checkbox(value=False, label="是否加入 越狱提示词")
             open_translate = gr.Checkbox(value=False, label="是否翻译结果")
+            open_assessment = gr.Checkbox(value=False, label="是否评估对话")
 
         with gr.Row():
             max_tokens = gr.Slider(minimum=1, maximum=4096, value=128, step=1, label='max_tokens')
@@ -129,7 +131,7 @@ def build_home_ui():
             base_system, nsfw_system, jailbreak_system,
             temperature, max_tokens, presence_penalty, top_p,
             use_temperature, use_top_p,
-            max_conv_length
+            max_conv_length, open_assessment
         ],
         outputs=[
             markdown_url
