@@ -50,7 +50,7 @@ A normal person
 
 
 def __csv_dialogue__(index: int) -> str:
-    dialogue = load_data('test_case/dialogue.csv', ['content'])
+    dialogue = load_data('../test_case/dialogue.csv', ['content'])
     return dialogue[index % len(dialogue)]['content']
 
 

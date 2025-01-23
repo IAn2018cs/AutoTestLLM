@@ -5,7 +5,7 @@ from typing import Optional
 import requests
 
 import config
-from tools import extract_json
+from utils.tools import extract_json
 
 
 def generate_by_openai(model: str, messages: list[dict], temperature: float = 0.5, json_format: bool = False,

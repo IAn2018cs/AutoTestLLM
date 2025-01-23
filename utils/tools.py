@@ -6,18 +6,12 @@ import os
 import random
 import string
 from datetime import datetime
-from os import PathLike
-from typing import AnyStr
 
 import pandas as pd
 
 
-def resolve_relative_path(file: PathLike[AnyStr], path: str) -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(file), path))
-
-
 def root_relative_path(path: str) -> str:
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), f'./{path}'))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), f'../{path}'))
 
 
 def create_path(path):
@@ -25,20 +19,11 @@ def create_path(path):
         os.makedirs(path)
 
 
-# 编码
-def encode_base64(string):
-    string_bytes = string.encode('utf-8')
-    base64_bytes = base64.b64encode(string_bytes)
-    base64_string = base64_bytes.decode('utf-8')
-    return base64_string
-
-
 # 解码
 def decode_base64(base64_string):
     base64_bytes = base64_string.encode('utf-8')
     string_bytes = base64.b64decode(base64_bytes)
-    string = string_bytes.decode('utf-8')
-    return string
+    return string_bytes.decode('utf-8')
 
 
 def extract_json(response):
@@ -46,17 +31,6 @@ def extract_json(response):
     json_start = response.index("{")
     json_end = response.rfind("}")
     return json.loads(response[json_start:json_end + 1])
-
-
-def save_txt_to_file(file_path: str, content: str):
-    # 获取文件所在的目录
-    directory = os.path.dirname(file_path)
-
-    # 如果目录不存在，创建它
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(content)
 
 
 def load_data_with_upload(csv_path, usecols):

@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from tools import load_data
+from utils.tools import load_data
 from uis.home.core import RoleInfo, start_gen
 
 if __name__ == '__main__':
@@ -27,5 +27,9 @@ if __name__ == '__main__':
     dialogue = []
     for item in dialogue_list:
         dialogue.append(item['content'])
-    result_url = start_gen(ai_model, roles, dialogue, rounds, conv_length, open_translate, nsfw, jailbreak)
+    result_url = start_gen(
+        ai_model, roles, dialogue, rounds, conv_length, open_translate,
+        nsfw=nsfw,
+        jailbreak=jailbreak
+    )
     print(result_url)

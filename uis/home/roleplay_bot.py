@@ -1,56 +1,57 @@
 # coding=utf-8
 import time
-from typing import Optional
 
 import config
 from llm.conv_bot import ConvBot
-from translate_factory import translate_text, LangType
+from utils.translate_factory import translate_text, LangType
 
 
 class RoleplayBot:
 
-    def __init__(self, test_id: int, model: str, name: str, brief_intro: str, first: str,
-                 nsfw: bool = True, jailbreak: bool = True,
-                 base_system: Optional[str] = None,
-                 nsfw_system: Optional[str] = None,
-                 jailbreak_system: Optional[str] = None,
-                 temperature: float = 1, max_tokens=200, presence_penalty=1.1, top_p=1.0,
-                 use_temperature=True, use_top_p=False):
+    def __init__(self, test_id: int, **kwargs):
         self.test_id = test_id
-        self.model = model
-        self.name = name
-        self.brief_intro = brief_intro
-        self.first = first
-        self.nsfw = nsfw
-        self.jailbreak = jailbreak
-        self.base_system = base_system.replace('{{char}}', name) if base_system else config.base_system.replace(
-            '{{char}}', name)
-        self.nsfw_system = nsfw_system if nsfw_system else config.nsfw_system
-        self.jailbreak_system = jailbreak_system if jailbreak_system else config.jailbreak_system
-        self.temperature = temperature
-        self.max_tokens = max_tokens
-        self.presence_penalty = presence_penalty
-        self.top_p = top_p
-        self.use_temperature = use_temperature
-        self.use_top_p = use_top_p
-        self.is_ollama_model = model in config.ollama_models
-        self.bot = ConvBot(model, self.is_ollama_model)
+        self.model = kwargs.get('model')
+        self.name = kwargs.get('name')
+        self.brief_intro = kwargs.get('brief_intro')
+        self.first = kwargs.get('first')
+        self.nsfw = kwargs.get('nsfw', False)
+        self.jailbreak = kwargs.get('jailbreak', False)
+        self.base_system = (kwargs.get('base_system', config.base_system)
+                            .replace('{{char}}', self.name)
+                            .replace('{{角色名字}}', self.name)
+                            .replace('{{角色背景信息}}', self.brief_intro)
+                            .replace('{{角色首条消息}}', self.first)
+                            )
+        self.nsfw_system = kwargs.get('nsfw_system', config.nsfw_system)
+        self.jailbreak_system = kwargs.get('jailbreak_system', config.jailbreak_system)
+        self.temperature = kwargs.get('temperature', 1.0)
+        self.max_tokens = kwargs.get('max_tokens', 200)
+        self.presence_penalty = kwargs.get('presence_penalty', 1.1)
+        self.top_p = kwargs.get('top_p', 1.0)
+        self.use_temperature = kwargs.get('use_temperature', True)
+        self.use_top_p = kwargs.get('use_top_p', False)
+        self.max_conv_length = kwargs.get('max_conv_length', 0)
+        self.is_ollama_model = self.model in config.ollama_models
+        self.is_gpt_model = self.model in config.gpt_models
+
+        self.bot = ConvBot(self.model, self.is_ollama_model)
         self.__init_conv__()
 
     def __init_conv__(self):
-        if self.is_ollama_model or 'qwen' in self.model.lower():
-            self.bot.add_system_message(self.base_system)
-        else:
-            self.bot.add_system_message(self.base_system)
-            self.bot.add_system_message(self.brief_intro)
+        if self.is_gpt_model:
+            self.bot.add_base_system_message(self.base_system)
+            self.bot.add_base_system_message(self.brief_intro)
             if self.nsfw:
-                self.bot.add_system_message(self.nsfw_system)
-            self.bot.add_system_message("[Start a new Chat]")
-            self.bot.add_assistant_message(self.first)
+                self.bot.add_base_system_message(self.nsfw_system)
+            self.bot.add_base_system_message("[Start a new Chat]")
+            self.bot.add_base_assistant_message(self.first)
+        else:
+            self.bot.add_base_system_message(self.base_system)
 
     def ask(self, msg: str) -> str:
         args = {
-            'jailbreak_system': self.jailbreak_system
+            'jailbreak_system': self.jailbreak_system,
+            'max_conv_length': self.max_conv_length
         }
         if self.use_temperature:
             args['temperature'] = self.temperature
@@ -77,27 +78,23 @@ class RoleplayBot:
             args.update({
                 'max_tokens': self.max_tokens,
             })
-            if 'qwen' in self.model.lower():
+            if self.is_gpt_model:
                 args.update({
-                    'presence_penalty': self.presence_penalty,
-                    'frequency_penalty': 0,
-                    'jailbreak': False
+                    'jailbreak': self.jailbreak
                 })
             else:
                 args.update({
-                    'jailbreak': self.jailbreak
+                    'presence_penalty': self.presence_penalty,
+                    'jailbreak': False
                 })
         return self.bot.ask(
             msg,
             **args
         )
 
-    def get_last_message(self) -> str:
-        return self.bot.messages[-1]['content']
-
     def get_conversation(self, open_translate: bool) -> list[dict]:
         result = []
-        if not self.is_ollama_model and 'qwen' not in self.model.lower():
+        if self.is_gpt_model:
             result.extend([
                 {
                     'test_id': self.test_id,
@@ -114,15 +111,14 @@ class RoleplayBot:
                     'translate': ""
                 }
             ])
-        if self.is_ollama_model or 'qwen' in self.model.lower():
-            sub_length = 1
-            order_id = 1
-        else:
-            sub_length = 5 if self.nsfw else 4
             order_id = 3
+        else:
+            order_id = 1
+
         if open_translate:
             print(f'start translate')
-        for message in self.bot.messages[sub_length:]:
+
+        for message in self.bot.history_messages:
             translate_msg = ""
             if open_translate:
                 translate_msg = translate_text(

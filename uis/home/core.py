@@ -7,8 +7,8 @@ from tqdm import tqdm
 import config
 from feishu.excel_tools import create_worksheet
 from feishu.feishu_sdk import FeiShuSdk
-from roleplay_bot import RoleplayBot
-from tools import generate_random_id, get_current_time
+from uis.home.roleplay_bot import RoleplayBot
+from utils.tools import generate_random_id, get_current_time
 
 
 class RoleInfo:
@@ -19,29 +19,19 @@ class RoleInfo:
         self.first = first
 
 
-def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: list[str], conv_length: int,
-                          nsfw: bool, open_translate: bool, jailbreak: bool,
-                          base_system: str, nsfw_system: str, jailbreak_system: str,
-                          temperature: float, max_tokens: int, presence_penalty: float, top_p: float,
-                          use_temperature: bool, use_top_p: bool):
-    bot = RoleplayBot(
-        test_id=test_id,
-        model=model,
-        name=role.name,
-        brief_intro=role.brief_intro,
-        first=role.first,
-        nsfw=nsfw,
-        jailbreak=jailbreak,
-        base_system=base_system,
-        nsfw_system=nsfw_system,
-        jailbreak_system=jailbreak_system,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        presence_penalty=presence_penalty,
-        top_p=top_p,
-        use_temperature=use_temperature,
-        use_top_p=use_top_p
-    )
+def test_conv_by_dialogue(
+        test_id: int, model: str, role: RoleInfo, dialogues: list[str],
+        conv_length: int, open_translate: bool,
+        **kwargs
+):
+    args = {
+        "model": model,
+        "name": role.name,
+        "brief_intro": role.brief_intro,
+        "first": role.first
+    }
+    args.update(kwargs)
+    bot = RoleplayBot(test_id=test_id, **args)
     print('start chat dialogue')
     for index in range(conv_length):
         bot.ask(
@@ -52,11 +42,11 @@ def test_conv_by_dialogue(test_id: int, model: str, role: RoleInfo, dialogues: l
     return bot.get_conversation(open_translate)
 
 
-def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: int, conv_length: int,
-               open_translate: bool, nsfw: bool, jailbreak: bool,
-               base_system: str, nsfw_system: str, jailbreak_system: str,
-               temperature: float, max_tokens: int, presence_penalty: float, top_p: float,
-               use_temperature: bool, use_top_p: bool):
+def start_test(
+        model: str, roles: list[RoleInfo], dialogues: list[str],
+        rounds: int, conv_length: int, open_translate: bool,
+        **kwargs
+):
     messages_map = {}
     total = len(roles) * rounds
     with tqdm(total=total) as pbar:
@@ -72,18 +62,8 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
                         role=role,
                         dialogues=dialogues,
                         conv_length=conv_length,
-                        nsfw=nsfw,
                         open_translate=open_translate,
-                        jailbreak=jailbreak,
-                        base_system=base_system,
-                        nsfw_system=nsfw_system,
-                        jailbreak_system=jailbreak_system,
-                        temperature=temperature,
-                        max_tokens=max_tokens,
-                        presence_penalty=presence_penalty,
-                        top_p=top_p,
-                        use_temperature=use_temperature,
-                        use_top_p=use_top_p
+                        **kwargs
                     )
                     futures.append((test_id, future))
 
@@ -99,14 +79,15 @@ def start_test(model: str, roles: list[RoleInfo], dialogues: list[str], rounds: 
     return messages_map
 
 
-def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: int, conv_length: int,
-              open_translate: bool, nsfw: bool, jailbreak: bool,
-              base_system: str = None, nsfw_system: str = None, jailbreak_system: str = None,
-              temperature: float = 1, max_tokens: int = 200, presence_penalty: float = 1.1, top_p: float = 1,
-              use_temperature = True, use_top_p = False) -> str:
+def start_gen(
+        model: str, roles: list[RoleInfo], dialogue: list[str],
+        rounds: int, conv_length: int, open_translate: bool,
+        **kwargs
+) -> str:
     task_id = f"{get_current_time()}-{generate_random_id()}"
     print(
-        f'{task_id}: start test, model: {model}, rounds: {rounds}, conv_length: {conv_length}, open_translate: {open_translate}, nsfw: {nsfw}, jailbreak: {jailbreak}, temperature: {temperature}, max_tokens: {max_tokens}, presence_penalty: {presence_penalty}')
+        f'{task_id}: start test, model: {model}, rounds: {rounds}, conv_length: {conv_length}, open_translate: {open_translate}'
+    )
     feishu_sdk = FeiShuSdk()
     map_data = start_test(
         model=model,
@@ -115,20 +96,13 @@ def start_gen(model: str, roles: list[RoleInfo], dialogue: list[str], rounds: in
         rounds=rounds,
         conv_length=conv_length,
         open_translate=open_translate,
-        nsfw=nsfw,
-        jailbreak=jailbreak,
-        base_system=base_system,
-        nsfw_system=nsfw_system,
-        jailbreak_system=jailbreak_system,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        presence_penalty=presence_penalty,
-        top_p=top_p,
-        use_temperature=use_temperature,
-        use_top_p=use_top_p
+        **kwargs
     )
     path = create_worksheet(f"{model.replace('/', '-')}对话测试-{generate_random_id(4)}", map_data)
     print('start upload docs')
-    url, _ = feishu_sdk.create_cloud_docs(path, "sheet")
+    if config.is_local_debug:
+        url = path
+    else:
+        url, _ = feishu_sdk.create_cloud_docs(path, "sheet")
     print(f'{task_id}: end test\n\n')
     return url

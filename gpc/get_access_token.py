@@ -6,8 +6,8 @@ import time
 import jwt
 import requests
 
-from tools import create_path
-from tools import root_relative_path
+from utils.tools import create_path
+from utils.tools import root_relative_path
 
 
 def create_jwt_token(private_key: str, sa_email: str, scope: str, valid_for_sec: int = 3600) -> dict:

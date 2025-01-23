@@ -8,7 +8,7 @@ import requests
 import config
 from gpc.get_access_token import get_access_token
 from llm.llm_tools import generate_by_openai
-from tools import decode_base64
+from utils.tools import decode_base64
 
 
 class TranslateType(enum.Enum):
