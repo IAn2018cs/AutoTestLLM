@@ -48,6 +48,27 @@ def start_test(
         rounds: int, conv_length: int, open_translate: bool,
         **kwargs
 ):
+    test_params = [
+        {
+            '参数名': "微调模型",
+            '参数值': model
+        }, {
+            '参数名': "测试多少遍",
+            '参数值': rounds
+        }, {
+            '参数名': "每遍对话几轮",
+            '参数值': conv_length
+        }, {
+            '参数名': "是否翻译结果",
+            '参数值': open_translate
+        }
+    ]
+    for key, value in kwargs.items():
+        test_params.append({
+            '参数名': key,
+            '参数值': value
+        })
+
     open_assessment = kwargs.pop('open_assessment', False)
     messages_map = {}
     assessment_list = []
@@ -98,6 +119,7 @@ def start_test(
                 messages_map[role.name] = all_messages
     if open_assessment:
         messages_map['对话评估'] = assessment_list
+    messages_map['参数'] = test_params
     return messages_map
 
 

@@ -40,7 +40,7 @@ class LLMClient:
         for key, value in kwargs.items():
             payload[key] = value
 
-        print(json.dumps(payload, indent=4))
+        # print(json.dumps(payload, indent=4))
 
         if config.is_local_debug:
             return f"{len(messages)}"
