@@ -17,7 +17,7 @@ class LLMClient:
         self.api_url: str = api_url or "https://api.openai.com"
         self.api_key: str = api_key
         self.timeout: float = timeout
-        retries = Retry(total=3, backoff_factor=1,
+        retries = Retry(total=3, backoff_factor=3,
                         allowed_methods=["HEAD", "GET", "PUT", "OPTIONS", "POST"],
                         status_forcelist=[429])
         self.session = requests.Session()

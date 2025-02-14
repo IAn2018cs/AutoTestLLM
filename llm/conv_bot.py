@@ -65,5 +65,6 @@ class ConvBot:
             self.__add_user_message__(self.history_messages, msg)
             self.__add_assistant_message__(self.history_messages, result)
             return result
-        except:
+        except Exception as e:
+            print(f'generate conv error: {e}')
             return ""
