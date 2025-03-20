@@ -2,14 +2,17 @@
 import config
 from llm.oai import LLMClient
 from llm.ollama import OllamaLLMClient
+from llm.poly import PolyLLMClient
 
 
 class ConvBot:
 
-    def __init__(self, model: str, is_ollama_model: bool):
+    def __init__(self, model: str):
         self.model = model
-        if is_ollama_model:
+        if model in config.ollama_models:
             self.llm_client = OllamaLLMClient(config.ollama_api_host, timeout=300)
+        elif model in config.poly_models:
+            self.llm_client = PolyLLMClient(config.poly_proxy_api_host, timeout=300)
         else:
             self.llm_client = LLMClient(config.openai_api_key, config.openai_api_host, timeout=300)
         self.base_messages = []

@@ -94,7 +94,7 @@ def create_worksheet(file_name: str, map_data: dict) -> Optional[str]:
     with pd.ExcelWriter(path, engine='openpyxl') as writer:
         for key, value in map_data.items():
             if len(value) != 0:
-                create_work(key, value, writer)
+                create_work(str(key), value, writer)
     return path
 
 

@@ -15,6 +15,9 @@ openai_api_key: str = os.getenv('OPENAI_API_KEY')
 # ollama
 ollama_api_host: str = os.getenv('OLLAMA_API_HOST', default='http://localhost:11434')
 
+# poly proxy
+poly_proxy_api_host: str = os.getenv('POLY_PROXY_API_HOST', default='http://localhost:11434')
+
 # gcp
 gcp_project_id: str = os.getenv('GCP_PROJECT_ID')
 gcp_private_key: str = os.getenv('GCP_PRIVATE_KEY')
@@ -29,6 +32,7 @@ port: int = int(os.getenv('PORT'))
 gpt_models: list[str] = os.getenv('GPT_MODELS', default='').split(' ')
 oai_models: list[str] = os.getenv('OAI_MODELS', default='').split(' ')
 ollama_models: list[str] = os.getenv('OLLAMA_MODELS', default='').split(' ')
+poly_models: list[str] = os.getenv('POLY_MODELS', default='').split(' ')
 
 dialogue_sleep = float(os.getenv('DIALOGUE_SLEEP', default='1'))
 translate_sleep = float(os.getenv('TRANSLATE_SLEEP', default='1'))

@@ -10,6 +10,7 @@ from utils.tools import load_data_with_upload
 all_models = []
 all_models.extend([model for model in config.gpt_models if model])
 all_models.extend([model for model in config.oai_models if model])
+all_models.extend([model for model in config.poly_models if model])
 all_models.extend([model for model in config.ollama_models if model])
 
 

@@ -13,7 +13,7 @@ class LLMClient:
             api_key: str,
             api_url: str = None,
             timeout: float = None,
-    ) -> None:
+    ):
         self.api_url: str = api_url or "https://api.openai.com"
         self.api_key: str = api_key
         self.timeout: float = timeout

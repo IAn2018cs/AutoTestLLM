@@ -11,7 +11,7 @@ class RoleplayBot:
     def __init__(self, test_id: int, **kwargs):
         self.test_id = test_id
         self.model = kwargs.get('model')
-        self.name = kwargs.get('name')
+        self.name = str(kwargs.get('name'))
         self.brief_intro = kwargs.get('brief_intro')
         self.first = kwargs.get('first')
         self.nsfw = kwargs.get('nsfw', False)
@@ -31,10 +31,12 @@ class RoleplayBot:
         self.use_temperature = kwargs.get('use_temperature', True)
         self.use_top_p = kwargs.get('use_top_p', False)
         self.max_conv_length = kwargs.get('max_conv_length', 0)
+
         self.is_ollama_model = self.model in config.ollama_models
         self.is_gpt_model = self.model in config.gpt_models
+        self.is_poly_model = self.model in config.poly_models
 
-        self.bot = ConvBot(self.model, self.is_ollama_model)
+        self.bot = ConvBot(self.model)
         self.__init_conv__()
 
     def __init_conv__(self):
@@ -72,6 +74,11 @@ class RoleplayBot:
                 'tfs_z': 1,
                 'num_ctx': 2048,
                 'frequency_penalty': 0,
+                'jailbreak': False
+            })
+        elif self.is_poly_model:
+            args.update({
+                'scene_id': int(self.name),
                 'jailbreak': False
             })
         else:

@@ -11,7 +11,7 @@ class OllamaLLMClient:
             self,
             api_url: str = None,
             timeout: float = None
-    ) -> None:
+    ):
         self.api_url: str = api_url or "http://localhost:11434"
         self.timeout: float = timeout
         self.session = requests.Session()
