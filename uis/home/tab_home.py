@@ -21,9 +21,12 @@ def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, ro
     try:
         if not str(role_file).endswith('csv') or not str(dialogue_file).endswith('csv'):
             raise gr.Error("只支持上传 csv 文件")
-        role_list = load_data_with_upload(role_file, ['Name', 'first_message', 'system', 'scene_id'])
+        if ai_model in config.poly_models:
+            role_list = load_data_with_upload(role_file, ['Name', 'first_message', 'system', 'scene_id'])
+        else:
+            role_list = load_data_with_upload(role_file, ['Name', 'first_message', 'system'])
         if len(role_list) == 0:
-            raise gr.Error("请检查角色 csv 文件中是否包含 'Name', 'first_message', 'system', 'scene_id'")
+            raise gr.Error("请检查角色 csv 文件中是否包含 'Name', 'first_message', 'system'，如果是 Poly 还需要 scene_id")
         roles = []
         for i, item in enumerate(role_list):
             roles.append(RoleInfo(
