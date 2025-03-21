@@ -28,9 +28,9 @@ def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, ro
         for i, item in enumerate(role_list):
             roles.append(RoleInfo(
                 role_id=i + 1,
-                name=item['Name'],
-                brief_intro=item['system'],
-                first=item['first_message']
+                name=str(item['Name']),
+                brief_intro=str(item['system']),
+                first=str(item['first_message'])
             ))
         dialogue_list = load_data_with_upload(dialogue_file, ['content'])
         if len(dialogue_list) == 0:
