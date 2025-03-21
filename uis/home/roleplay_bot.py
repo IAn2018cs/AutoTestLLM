@@ -11,9 +11,10 @@ class RoleplayBot:
     def __init__(self, test_id: int, **kwargs):
         self.test_id = test_id
         self.model = kwargs.get('model')
-        self.name = str(kwargs.get('name'))
+        self.name = kwargs.get('name')
         self.brief_intro = kwargs.get('brief_intro')
         self.first = kwargs.get('first')
+        self.scene_id = int(kwargs.get('scene_id'))
         self.nsfw = kwargs.get('nsfw', False)
         self.jailbreak = kwargs.get('jailbreak', False)
         self.base_system = (kwargs.get('base_system', config.base_system)
@@ -78,7 +79,7 @@ class RoleplayBot:
             })
         elif self.is_poly_model:
             args.update({
-                'scene_id': int(self.name),
+                'scene_id': self.scene_id,
                 'jailbreak': False
             })
         else:

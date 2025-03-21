@@ -21,16 +21,17 @@ def start_gan(ai_model, rounds, conv_length, open_translate, nsfw, jailbreak, ro
     try:
         if not str(role_file).endswith('csv') or not str(dialogue_file).endswith('csv'):
             raise gr.Error("只支持上传 csv 文件")
-        role_list = load_data_with_upload(role_file, ['Name', 'first_message', 'system'])
+        role_list = load_data_with_upload(role_file, ['Name', 'first_message', 'system', 'scene_id'])
         if len(role_list) == 0:
-            raise gr.Error("请检查角色 csv 文件中是否包含 'Name', 'first_message', 'system'")
+            raise gr.Error("请检查角色 csv 文件中是否包含 'Name', 'first_message', 'system', 'scene_id'")
         roles = []
         for i, item in enumerate(role_list):
             roles.append(RoleInfo(
                 role_id=i + 1,
                 name=str(item['Name']),
                 brief_intro=str(item['system']),
-                first=str(item['first_message'])
+                first=str(item['first_message']),
+                scene_id=int(item.get('scene_id', 0))
             ))
         dialogue_list = load_data_with_upload(dialogue_file, ['content'])
         if len(dialogue_list) == 0:

@@ -13,11 +13,12 @@ from utils.tools import generate_random_id, get_current_time
 
 
 class RoleInfo:
-    def __init__(self, role_id: int, name: str, brief_intro: str, first: str):
+    def __init__(self, role_id: int, name: str, brief_intro: str, first: str, scene_id: int = 0):
         self.role_id = role_id
         self.name = name
         self.brief_intro = brief_intro
         self.first = first
+        self.scene_id = scene_id
 
 
 def test_conv_by_dialogue(
@@ -29,7 +30,8 @@ def test_conv_by_dialogue(
         "model": model,
         "name": role.name,
         "brief_intro": role.brief_intro,
-        "first": role.first
+        "first": role.first,
+        "scene_id": role.scene_id
     }
     args.update(kwargs)
     bot = RoleplayBot(test_id=test_id, **args)
